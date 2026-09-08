@@ -4,9 +4,11 @@
 #include <systemc>
 #include "ModuleSingle.hpp"
 
+using namespace sc_core;
+
 SC_MODULE(Top)
 {
-    sc_core::sc_clock clock;
+    sc_clock clock;
     ModuleSingle ms;
 
     void simulate()
@@ -15,7 +17,7 @@ SC_MODULE(Top)
         sc_stop();
     }
 
-    SC_CTOR(Top) : clock("clock", 2, sc_core::SC_NS), ms("ms")
+    SC_CTOR(Top) : clock("clock", 2, SC_NS), ms("ms")
     {
         ms.clk(clock);
         SC_THREAD(simulate);
