@@ -13,11 +13,11 @@ SC_MODULE(Top)
 
     void simulate()
     {
-        wait(200, SC_NS);
+        wait(200, SC_MS);
         sc_stop();
     }
 
-    SC_CTOR(Top) : clock("clock", 2, SC_NS), ms("ms")
+    SC_CTOR(Top) : clock("clock", 2, SC_MS), ms("ms")
     {
         ms.clk(clock);
         SC_THREAD(simulate);

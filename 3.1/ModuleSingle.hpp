@@ -11,7 +11,7 @@ SC_MODULE(ModuleSingle)
 
     sc_in<bool> clk;
 
-    void noitify()
+    void notify()
     {
         while (true)
         {
@@ -28,7 +28,7 @@ SC_MODULE(ModuleSingle)
     SC_CTOR(ModuleSingle) : clk("clk")
     {
         counter = 0;
-        SC_THREAD(noitify);
+        SC_THREAD(notify);
         sensitive << clk.pos();
     }
 };
