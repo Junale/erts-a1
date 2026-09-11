@@ -18,8 +18,6 @@ SC_MODULE(Slave)
 
     sc_out<bool> ready;
 
-    sc_trace_file *tf;
-
     void run()
     {
         ready.write(false);
@@ -40,24 +38,9 @@ SC_MODULE(Slave)
 
     SC_CTOR(Slave)
     {
-
-        tf = sc_create_vcd_trace_file("WaveForm");
-        tf->set_time_unit(1, SC_NS);
-        sc_trace(tf, clk, "clock");
-        sc_trace(tf, valid, "valid");
-        sc_trace(tf, data, "data");
-        sc_trace(tf, channel, "channel");
-        sc_trace(tf, error, "error");
-        sc_trace(tf, ready, "ready");
-
         SC_THREAD(run);
         sensitive << clk.pos();
     };
-
-    ~Slave()
-    {
-        sc_close_vcd_trace_file(tf);
-    }
 };
 
 #endif
