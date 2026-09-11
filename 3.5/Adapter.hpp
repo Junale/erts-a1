@@ -31,7 +31,7 @@ SC_MODULE(Adapter)
             sc_dt::sc_uint<DATA_BITS> i = data_in.read();
 
             data.write(i);
-            channel.write(i % MAX_CHANNEL);
+            channel.write(0);
             error.write(0);
             valid.write(true);
 

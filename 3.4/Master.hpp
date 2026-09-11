@@ -26,7 +26,7 @@ SC_MODULE(Master)
         for (int i = 0; i < 10; i++)
         {
             data.write(i);
-            channel.write(i % MAX_CHANNEL);
+            channel.write(0);
             error.write(0);
             valid.write(true);
 
