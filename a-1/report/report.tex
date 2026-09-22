@@ -211,11 +211,77 @@ As seen in Listing~\ref{lst:avalon-trace}, the VCD trace contains the clock and 
 
 \begin{figure}[htbp]
     \centering
-    \fbox{\parbox[c][4cm][c]{0.85\textwidth}{\centering [SIMULATION RESULT]}}
+    \includegraphics[width=0.9\textwidth]{images/sim-res-3.4+3.5.png}
     \caption{GTKWave view of the Avalon-ST clock, valid, ready, data, channel, and error signals.}
     \label{fig:avalon-result}
 \end{figure}
 
-As seen in Figure~\ref{fig:avalon-result}, the GTKWave screenshot will show the timing relationship between \texttt{valid}, \texttt{ready}, and the transmitted data signals.
+As seen in Figure~\ref{fig:avalon-result}, the GTKWave screenshot will show the timing relationship between \texttt{valid}, \texttt{ready}, and the transmitted data signals.Notice how the \texttt{ready} signal is deliberately toggled on and off to demonstrate the handshake behavior and only on the clock edges where the \texttt{ready} signal is high, the master will complete the transfer and set the \texttt{valid} signal low.
+
+\clearpage
+\section*{Exercise 3.5: Avalon Streaming Master and Slave using adapter}
+
+\textbf{Task.} Implement an Avalon Streaming master and slave using an adapter to convert between FIFO and Avalon-ST interfaces.
+
+\textbf{Solution.} The adapter module acts as a bridge between the Master sending data through a FIFO and the slave reading from the Avalon-ST interface, converting the data format and handling the necessary signal transitions.
+
+The adapter is the main focus of this exercise, as it must ensure that data is correctly transferred from the FIFO to the Avalon-ST interface while respecting the handshake protocol.
+The implementation of the adapter is shown in Listing~\ref{lst:adapter}, where it reads data from the FIFO, writes it to the Avalon-ST interface, and manages the valid and ready signals accordingly.
+
+\textbf{OBS:} In the provided adapter model in the assignment description, the adapter and the salve has a reset signal, but in the provided solution, the reset signal is not used since there was provided no information about how to use it in the assignment description.
+
+\clearpage
+\begin{lstlisting}[caption={Adapter converts FIFO data to Avalon-ST interface.}, label={lst:adapter}]
+...
+sc_in<bool> clk;
+sc_in<bool> ready;
+
+sc_fifo_in<sc_dt::sc_uint<DATA_BITS>> data_in;
+
+sc_out<bool> valid;
+sc_out<sc_dt::sc_uint<DATA_BITS>> data;
+sc_out<sc_dt::sc_uint<CHANNEL_BITS>> channel;
+sc_out<sc_dt::sc_uint<ERROR_BITS>> error;
+
+void run()
+{
+    while (true)
+    {
+
+        valid.write(false);
+        wait();
+
+        sc_dt::sc_uint<DATA_BITS> i = data_in.read();
+
+        data.write(i);
+        channel.write(i % MAX_CHANNEL);
+        error.write(0);
+        valid.write(true);
+
+        wait();
+
+        while (!ready.read())
+        {
+            wait();
+        }
+
+        valid.write(false);
+        wait();
+    }
+}
+...
+
+\end{lstlisting}
+
+The resulting VCD waveform trace for the Avalon-ST interface signals is shown in Figure~\ref{fig:avalon-result-adapter}. The adapter successfully bridges the FIFO and Avalon-ST interfaces, allowing the master and slave to communicate effectively.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/sim-res-3.4+3.5.png}
+    \caption{GTKWave view of the Avalon-ST clock, valid, ready, data, channel, and error signals with adapter.}
+    \label{fig:avalon-result-adapter}
+\end{figure}
+
+Notice how the waveform result in Figure~\ref{fig:avalon-result-adapter} is identical to the one in Exercise 3.4, as shown in Figure~\ref{fig:avalon-result}. The adapter successfully bridges the FIFO and Avalon-ST interfaces, allowing the master and slave to communicate effectively.
 
 \end{document}

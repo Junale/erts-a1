@@ -22,6 +22,8 @@ SC_MODULE(Top)
     sc_signal<sc_dt::sc_uint<CHANNEL_BITS>> channel_signal;
     sc_signal<sc_dt::sc_uint<ERROR_BITS>> error_signal;
 
+    sc_trace_file *tf;
+
     void simulate()
     {
         wait(50 * CLK_PERIODE, SC_NS);
@@ -43,6 +45,15 @@ SC_MODULE(Top)
         slave.channel(channel_signal);
         slave.error(error_signal);
         slave.ready(ready_signal);
+
+        tf = sc_create_vcd_trace_file("WaveForm");
+        tf->set_time_unit(1, SC_NS);
+        sc_trace(tf, clock, "clock");
+        sc_trace(tf, valid_signal, "valid");
+        sc_trace(tf, data_signal, "data");
+        sc_trace(tf, channel_signal, "channel");
+        sc_trace(tf, error_signal, "error");
+        sc_trace(tf, ready_signal, "ready");
 
         SC_THREAD(simulate);
     }
