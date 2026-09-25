@@ -106,11 +106,66 @@ This exercise gives us a first working connection between software running on th
 \newpage
 \section*{Exercise 4: Create a Matrix Multiplication}
 
-\newpage
-\section*{Exercise 5: Create a Hardware IP Acceleration}
+\subsection*{Objective}
+
+In this exercise, we implement a software matrix multiplication on the ZYBO board. The program uses two 4x4 matrices, calculates the product, and reports the execution time through the USB-UART interface.
+
+\subsection*{Matrix multiplication}
+
+The first matrix contains the values from 1 to 16. For the second matrix, the assignment gives $B^T$, so if:
+\[
+B^T =
+\left(
+\begin{bmatrix}
+1 & 1 & 1 & 1 \\
+2 & 2 & 2 & 2 \\
+3 & 3 & 3 & 3 \\
+4 & 4 & 4 & 4
+\end{bmatrix}
+\right)^T
+=
+\begin{bmatrix}
+1 & 2 & 3 & 4 \\
+1 & 2 & 3 & 4 \\
+1 & 2 & 3 & 4 \\
+1 & 2 & 3 & 4
+\end{bmatrix}.
+\]
+
+Then:
+\[
+B =
+\begin{bmatrix}
+1 & 1 & 1 & 1 \\
+2 & 2 & 2 & 2 \\
+3 & 3 & 3 & 3 \\
+4 & 4 & 4 & 4
+\end{bmatrix}
+\]
+We used the matrices $A$ and $B$ as defined above for the multiplication, which is performed using nested loops, where each element in the result is calculated as the sum of four products.
+
+Following the operations shown in the figure below, which we took from the assignment:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{\detokenize{../images/E4 - Assignment operations.png}}
+    \caption{Matrix multiplication operations for calculating the elements of $P$.}
+\end{figure}
+
+We made the multiplication and transposition in the same loops. This was confusing at first, but we eventually got it and arrived at the correct result.
+
+\codeplaceholder{Matrix initialization and software multiplication}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{\detokenize{../images/E4 - Matrix Mult.jpg}}
+    \caption{Matrix multiplication result and execution time.}
+\end{figure}
+
+The result matrix is displayed correctly, and the software implementation takes 1102 clock ticks in this run. This result will later be used for comparison with the hardware-accelerated version.
 
 \newpage
-\section*{Exercise 6: HLS exercise}
+\section*{Exercise 5: Create a Hardware IP Acceleration}
 
 \newpage
 \section*{Exercise 7: HLS exercise implementing a Neural Network}
