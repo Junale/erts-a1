@@ -4,6 +4,7 @@
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{listings}
+\usepackage{float}
 
 \setlength{\parindent}{0pt}
 \title{ERTS: Assignment 2}
@@ -19,13 +20,88 @@ Mark Myrtoft Bøgelund, student number: 202206634
     breaklines=true
 }
 
+\newcommand{\codeplaceholder}[1]{%
+\begin{figure}[h]
+    \centering
+    \fbox{%
+        \begin{minipage}[c][30mm][c]{0.82\textwidth}
+            \centering
+            \texttt{[Code snippet placeholder]}\\[2mm]
+            \textit{#1}
+        \end{minipage}%
+    }
+    \caption{#1}
+\end{figure}%
+}
+
+\newcommand{\resultplaceholder}[1]{%
+\begin{figure}[h]
+    \centering
+    \fbox{%
+        \begin{minipage}[c][45mm][c]{0.82\textwidth}
+            \centering
+            \textit{Placeholder for #1.}
+        \end{minipage}%
+    }
+    \caption{#1}
+\end{figure}%
+}
+
 \begin{document}
 \maketitle
 
 \section*{Introduction}
 
+The purpose of this assignment is to learn the design flow for a system on a programmable chip. Using Vivado, SDK, and HLS, we explore the relationship between the Zynq Processing System (PS) and Programmable Logic (PL), interface drivers, command-line control, custom IP, and hardware acceleration.
+
+We began by following the setup instructions to configure the ZYBO board, connect it to the development computer, and prepare the required Xilinx design tools. This was initially quite challenging, since our pc runs on Windows 11, and the old software was not fully compatible. Eventually, we got it working. This provided the hardware and software platform for the exercises that follow.
+
 \newpage
 \section*{Exercise 3: Create a Console Application}
+
+\subsection*{Objective}
+
+In this exercise, we create a small console application for the ZYBO board. It receives commands over USB-UART and uses them to control the LEDs through the switches and timer.
+
+\subsection*{Command interpreter}
+
+\codeplaceholder{Console command interpreter}
+
+The application will read a command from the terminal and use a \texttt{switch} statement to select the requested operation.
+
+\subsection*{Command 1: Switches to LEDs}
+
+\codeplaceholder{Reading the switches and writing the LED output}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{\detokenize{../images/E3 - Switch and LED.jpg}}
+    \caption{The LEDs reflect the binary state of the switches.}
+\end{figure}
+
+With command \texttt{1}, the LEDs light up according to the switch positions.
+
+\subsection*{Command 2: Timer-driven binary counter}
+
+\codeplaceholder{XScuTimer initialization and one-second counter}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{\detokenize{../images/E3 - Counter and LED 1.jpg}}
+    \caption{The terminal displays the counter while the LEDs show its binary value.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{\detokenize{../images/E3 - Counter and LED 2.jpg}}
+    \caption{The counter continues increasing and is reflected on the LEDs.}
+\end{figure}
+
+With command \texttt{2}, the timer increases the counter once per second. The LEDs display the counter as a four-bit binary value.
+
+\subsection*{Discussion}
+
+This exercise gives us a first working connection between software running on the processing system and hardware peripherals on the ZYBO board. It also prepares the structure we will use in the later exercises.
 
 \newpage
 \section*{Exercise 4: Create a Matrix Multiplication}
