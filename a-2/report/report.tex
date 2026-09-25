@@ -167,6 +167,40 @@ The result matrix is displayed correctly, and the software implementation takes 
 \newpage
 \section*{Exercise 5: Create a Hardware IP Acceleration}
 
+\subsection*{Objective}
+
+In this exercise, we use a custom hardware IP to accelerate the matrix multiplication from Exercise 4. The IP performs four byte-wise multiplications and adds the results before returning a single matrix element.
+
+\subsection*{Matrix IP}
+
+\codeplaceholder{VHDL matrix IP user logic}
+
+The matrix IP receives two packed 32-bit values through its registers. Each value contains four matrix elements, so the IP can multiply the corresponding bytes in parallel and return their sum. The result is read through a third memory-mapped register.
+
+\subsection*{Hardware matrix multiplication}
+
+\codeplaceholder{multiMatrixHard function and memory-mapped IP access}
+
+The hardware implementation uses the same matrix structure as the software version. Instead of calculating the four products in the processor, each row of $A$ and each row of $B$ are written to the IP. The returned value is then stored in the corresponding element of $P$.
+
+\subsection*{Timing comparison}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{\detokenize{../images/E5 - Matrix mult soft and hard.jpg}}
+    \caption{Comparison of the software and hardware matrix multiplication results.}
+\end{figure}
+
+Both implementations produce the same result. The software version took 1253 clock ticks, compared with 3981 ticks for the hardware version. The processing system runs at 650 MHz, while the hardware IP in the programmable logic runs at 100 MHz. The hardware time also includes transfers to and from the IP. If the hardware IP ran at 650 MHz, its ideal scaled time would be:
+\[
+3981 \cdot \frac{100}{650} \approx 612\ \text{clock ticks}.
+\]
+Compared with the software result, this corresponds to an ideal speedup of
+\[
+\frac{1253}{612} \approx 2.05\times.
+\]
+The practical speedup would be lower because the transfer overhead remains.
+
 \newpage
 \section*{Exercise 7: HLS exercise implementing a Neural Network}
 
