@@ -52,22 +52,32 @@ Mark Myrtoft Bøgelund, student number: 202206634
 
 \section*{Introduction}
 
-The purpose of this assignment is to learn the design flow for a system on a programmable chip. Using Vivado, SDK, and HLS, we explore the relationship between the Zynq Processing System (PS) and Programmable Logic (PL), interface drivers, command-line control, custom IP, and hardware acceleration.
+The purpose of this assignment is to learn the design flow for a system on a
+programmable chip. Using Vivado, SDK, and HLS, we explore the relationship
+between the Zynq Processing System (PS) and Programmable Logic (PL), interface
+drivers, command-line control, custom IP, and hardware acceleration.
 
-We began by following the setup instructions to configure the ZYBO board, connect it to the development computer, and prepare the required Xilinx design tools. This was initially quite challenging, since our pc runs on Windows 11, and the old software was not fully compatible. Eventually, we got it working. This provided the hardware and software platform for the exercises that follow.
+We began by following the setup instructions to configure the ZYBO board,
+connect it to the development computer, and prepare the required Xilinx design
+tools. This was initially quite challenging, since our pc runs on Windows 11,
+and the old software was not fully compatible. Eventually, we got it working.
+This provided the hardware and software platform for the exercises that follow.
 
 \newpage
 \section*{Exercise 3: Create a Console Application}
 
 \subsection*{Objective}
 
-In this exercise, we create a small console application for the ZYBO board. It receives commands over USB-UART and uses them to control the LEDs through the switches and timer.
+In this exercise, we create a small console application for the ZYBO board. It
+receives commands over USB-UART and uses them to control the LEDs through the
+switches and timer.
 
 \subsection*{Command interpreter}
 
 \codeplaceholder{Console command interpreter}
 
-The application will read a command from the terminal and use a \texttt{switch} statement to select the requested operation.
+The application will read a command from the terminal and use a \texttt{switch}
+statement to select the requested operation.
 
 \subsection*{Command 1: Switches to LEDs}
 
@@ -97,54 +107,63 @@ With command \texttt{1}, the LEDs light up according to the switch positions.
     \caption{The counter continues increasing and is reflected on the LEDs.}
 \end{figure}
 
-With command \texttt{2}, the timer increases the counter once per second. The LEDs display the counter as a four-bit binary value.
+With command \texttt{2}, the timer increases the counter once per second. The
+LEDs display the counter as a four-bit binary value.
 
 \subsection*{Discussion}
 
-This exercise gives us a first working connection between software running on the processing system and hardware peripherals on the ZYBO board. It also prepares the structure we will use in the later exercises.
+This exercise gives us a first working connection between software running on
+the processing system and hardware peripherals on the ZYBO board. It also
+prepares the structure we will use in the later exercises.
 
 \newpage
 \section*{Exercise 4: Create a Matrix Multiplication}
 
 \subsection*{Objective}
 
-In this exercise, we implement a software matrix multiplication on the ZYBO board. The program uses two 4x4 matrices, calculates the product, and reports the execution time through the USB-UART interface.
+In this exercise, we implement a software matrix multiplication on the ZYBO
+board. The program uses two 4x4 matrices, calculates the product, and reports
+the execution time through the USB-UART interface.
 
 \subsection*{Matrix multiplication}
 
-The first matrix contains the values from 1 to 16. For the second matrix, the assignment gives $B^T$, so if:
+The first matrix contains the values from 1 to 16. For the second matrix, the
+assignment gives $B^T$, so if:
 \[
-B^T =
-\left(
-\begin{bmatrix}
-1 & 1 & 1 & 1 \\
-2 & 2 & 2 & 2 \\
-3 & 3 & 3 & 3 \\
-4 & 4 & 4 & 4
-\end{bmatrix}
-\right)^T
-=
-\begin{bmatrix}
-1 & 2 & 3 & 4 \\
-1 & 2 & 3 & 4 \\
-1 & 2 & 3 & 4 \\
-1 & 2 & 3 & 4
-\end{bmatrix}.
+    B^T =
+    \left(
+    \begin{bmatrix}
+            1 & 1 & 1 & 1 \\
+            2 & 2 & 2 & 2 \\
+            3 & 3 & 3 & 3 \\
+            4 & 4 & 4 & 4
+        \end{bmatrix}
+    \right)^T
+    =
+    \begin{bmatrix}
+        1 & 2 & 3 & 4 \\
+        1 & 2 & 3 & 4 \\
+        1 & 2 & 3 & 4 \\
+        1 & 2 & 3 & 4
+    \end{bmatrix}.
 \]
 
 Then:
 \[
-B =
-\begin{bmatrix}
-1 & 1 & 1 & 1 \\
-2 & 2 & 2 & 2 \\
-3 & 3 & 3 & 3 \\
-4 & 4 & 4 & 4
-\end{bmatrix}
+    B =
+    \begin{bmatrix}
+        1 & 1 & 1 & 1 \\
+        2 & 2 & 2 & 2 \\
+        3 & 3 & 3 & 3 \\
+        4 & 4 & 4 & 4
+    \end{bmatrix}
 \]
-We used the matrices $A$ and $B$ as defined above for the multiplication, which is performed using nested loops, where each element in the result is calculated as the sum of four products.
+We used the matrices $A$ and $B$ as defined above for the multiplication, which
+is performed using nested loops, where each element in the result is calculated
+as the sum of four products.
 
-Following the operations shown in the figure below, which we took from the assignment:
+Following the operations shown in the figure below, which we took from the
+assignment:
 
 \begin{figure}[H]
     \centering
@@ -152,7 +171,8 @@ Following the operations shown in the figure below, which we took from the assig
     \caption{Matrix multiplication operations for calculating the elements of $P$.}
 \end{figure}
 
-We made the multiplication and transposition in the same loops. This was confusing at first, but we eventually got it and arrived at the correct result.
+We made the multiplication and transposition in the same loops. This was
+confusing at first, but we eventually got it and arrived at the correct result.
 
 \codeplaceholder{Matrix initialization and software multiplication}
 
@@ -162,26 +182,36 @@ We made the multiplication and transposition in the same loops. This was confusi
     \caption{Matrix multiplication result and execution time.}
 \end{figure}
 
-The result matrix is displayed correctly, and the software implementation takes 1102 clock ticks in this run. This result will later be used for comparison with the hardware-accelerated version.
+The result matrix is displayed correctly, and the software implementation takes
+1102 clock ticks in this run. This result will later be used for comparison
+with the hardware-accelerated version.
 
 \newpage
 \section*{Exercise 5: Create a Hardware IP Acceleration}
 
 \subsection*{Objective}
 
-In this exercise, we use a custom hardware IP to accelerate the matrix multiplication from Exercise 4. The IP performs four byte-wise multiplications and adds the results before returning a single matrix element.
+In this exercise, we use a custom hardware IP to accelerate the matrix
+multiplication from Exercise 4. The IP performs four byte-wise multiplications
+and adds the results before returning a single matrix element.
 
 \subsection*{Matrix IP}
 
 \codeplaceholder{VHDL matrix IP user logic}
 
-The matrix IP receives two packed 32-bit values through its registers. Each value contains four matrix elements, so the IP can multiply the corresponding bytes in parallel and return their sum. The result is read through a third memory-mapped register.
+The matrix IP receives two packed 32-bit values through its registers. Each
+value contains four matrix elements, so the IP can multiply the corresponding
+bytes in parallel and return their sum. The result is read through a third
+memory-mapped register.
 
 \subsection*{Hardware matrix multiplication}
 
 \codeplaceholder{multiMatrixHard function and memory-mapped IP access}
 
-The hardware implementation uses the same matrix structure as the software version. Instead of calculating the four products in the processor, each row of $A$ and each row of $B$ are written to the IP. The returned value is then stored in the corresponding element of $P$.
+The hardware implementation uses the same matrix structure as the software
+version. Instead of calculating the four products in the processor, each row of
+$A$ and each row of $B$ are written to the IP. The returned value is then
+stored in the corresponding element of $P$.
 
 \subsection*{Timing comparison}
 
@@ -191,17 +221,122 @@ The hardware implementation uses the same matrix structure as the software versi
     \caption{Comparison of the software and hardware matrix multiplication results.}
 \end{figure}
 
-Both implementations produce the same result. The software version took 1253 clock ticks, compared with 3981 ticks for the hardware version. The processing system runs at 650 MHz, while the hardware IP in the programmable logic runs at 100 MHz. The hardware time also includes transfers to and from the IP. If the hardware IP ran at 650 MHz, its ideal scaled time would be:
+Both implementations produce the same result. The software version took 1253
+clock ticks, compared with 3981 ticks for the hardware version. The processing
+system runs at 650 MHz, while the hardware IP in the programmable logic runs at
+100 MHz. The hardware time also includes transfers to and from the IP. If the
+hardware IP ran at 650 MHz, its ideal scaled time would be:
 \[
-3981 \cdot \frac{100}{650} \approx 612\ \text{clock ticks}.
+    3981 \cdot \frac{100}{650} \approx 612\ \text{clock ticks}.
 \]
 Compared with the software result, this corresponds to an ideal speedup of
 \[
-\frac{1253}{612} \approx 2.05\times.
+    \frac{1253}{612} \approx 2.05\times.
 \]
 The practical speedup would be lower because the transfer overhead remains.
 
 \newpage
 \section*{Exercise 7: HLS exercise implementing a Neural Network}
+
+\subsection*{Objective}
+
+In this exercise, we implement a configurable two-layer neural network in C++
+and use Vivado HLS to synthesize it as an IP core. The network uses fixed-point
+integer arithmetic, with weights scaled by $2^{15}$, and applies a ReLU
+activation to the hidden layer.
+
+\subsection*{Neural network implementation}
+
+The network has 196 inputs, 32 hidden neurons, and 10 outputs. The weights are
+represented in fixed-point form with 15 fractional bits. After each dot
+product, the result is shifted back by 15 bits; ReLU is applied to the
+hidden-layer values.
+
+\begin{lstlisting}[caption={Fixed-point scaling and ReLU in the hidden layer}]
+int value = static_cast<int>(sum >> BITS);
+neurons[i] = value < 0 ? 0 : value;
+\end{lstlisting}
+
+The input and weight arrays are controlled by the processor through AXI4-Lite.
+Switches and LEDs use direct ports, with the switch value passed through to the
+LEDs.
+
+\begin{lstlisting}[caption={HLS interfaces for processor data and board I/O}]
+#pragma HLS INTERFACE s_axilite port=input bundle=CTRL
+#pragma HLS INTERFACE s_axilite port=weightsI bundle=CTRL
+#pragma HLS INTERFACE s_axilite port=weightsO bundle=CTRL
+#pragma HLS INTERFACE s_axilite port=output bundle=CTRL
+#pragma HLS INTERFACE ap_none port=inSwitch
+#pragma HLS INTERFACE ap_none port=outLeds
+
+*outLeds = inSwitch;
+\end{lstlisting}
+
+The provided `neuralNet.h` defines the function interface, and `testBench.cpp`
+supplies test inputs and checks the C model before synthesis.
+
+\subsection*{HLS results}
+
+We compared the design with and without pipelining the inner loops. In the
+pipelined version, an initiation interval of one is requested:
+
+\begin{lstlisting}[caption={Pipeline directive used on the inner loops}]
+#pragma HLS PIPELINE II=1
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.82\textwidth]{\detokenize{../images/E7 - Simulation Synthesis.jpg}}
+    \caption{Vivado HLS simulation and synthesis results.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.82\textwidth]{\detokenize{../images/E7 - Simulation Log.jpg}}
+    \caption{Simulation log for the neural network testbench.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.82\textwidth]{\detokenize{../images/E7 - Comparison Report.jpg}}
+    \caption{Comparison of the pipelined and non-pipelined HLS implementations.}
+\end{figure}
+
+\subsection*{ZYBO integration and timing}
+
+The synthesized IP was exported as VHDL version 1.0.1 and integrated into the
+Vivado ZYBO design. The board photos document the switch-to-LED pass-through.
+The SDK test compares software and hardware outputs and measures input, weight,
+compute, and output-transfer times separately, making the data-transfer cost
+visible.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{\detokenize{../images/E7 - Zybo board LEDS and switches 1.jpg}}
+        \caption{ZYBO switch and LED verification.}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{\detokenize{../images/E7 - Zybo board LEDS and switches 2.jpg}}
+        \caption{A second switch and LED test state.}
+    \end{minipage}
+\end{figure}
+
+The HLS implementations and SDK test programs are listed in the appendix. The
+assignment-provided header and testbench should be included there as well.
+
+\appendix
+\section*{Exercise 7 source code}
+
+The following listings contain the HLS implementation without pipelining, the
+pipelined implementation, the direct switch-to-LED test, and the SDK
+software/hardware comparison program.
+
+\lstinputlisting[language=C++,caption={HLS neural network without pipelining}]{../code/lab7opg3.c}
+\lstinputlisting[language=C++,caption={HLS neural network with pipelining}]{../code/lab7opg4.c}
+\lstinputlisting[language=C++,caption={ZYBO switch-to-LED verification}]{../code/lab7opg8.c}
+\lstinputlisting[language=C++,caption={SDK software and hardware timing comparison}]{../code/lab7opg9.c}
 
 \end{document}
