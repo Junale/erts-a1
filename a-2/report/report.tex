@@ -306,9 +306,9 @@ The practical speedup would be lower because the transfer overhead remains.
 \section*{Exercise 7: HLS exercise implementing a Neural Network}
 
 In this exercise, we implement a configurable two-layer neural network in C++
-and use Vivado HLS to synthesize it as an IP core. The network uses fixed-point
+and use Vivado HLS to synthesize it as an IP core. The neural network uses fixed-point
 integer arithmetic, with weights scaled by $2^{15}$, and applies a ReLU
-activation to the hidden layer.
+activation function to the hidden layer.
 
 \subsection*{Neural network implementation}
 
@@ -317,9 +317,32 @@ represented in fixed-point form with 15 fractional bits. After each dot
 product, the result is shifted back by 15 bits; ReLU is applied to the
 hidden-layer values.
 
-\begin{lstlisting}[caption={Fixed-point scaling and ReLU in the hidden layer}]
-int value = static_cast<int>(sum >> BITS);
-neurons[i] = value < 0 ? 0 : value;
+\begin{lstlisting}[caption={Neural network implementation in C++}, label={lst:neural-network}, language={C++}]
+int neurons[NEURONS_LEN];
+*outLeds = inSwitch;
+
+for (int i = 0; i < NEURONS_LEN; ++i) {
+	long long sum = 0;
+	const int offset = NEURONS_LEN * i;
+
+	for (int j = 0; j < INPUT_LEN; ++j) {
+		sum += static_cast<int>(input[j]) * weightsI[offset + j];
+	}
+
+	int value = static_cast<int>(sum >> BITS);
+	neurons[i] = value < 0 ? 0 : value;
+}
+
+for (int i = 0; i < OUTPUT_LEN; ++i) {
+	long long sum = 0;
+	const int offset = OUTPUT_LEN * i;
+
+	for (int j = 0; j < NEURONS_LEN; ++j) {
+		sum += static_cast<long long>(neurons[j]) * weightsO[offset + j];
+	}
+
+	output[i] = static_cast<int>(sum >> BITS);
+}
 \end{lstlisting}
 
 The input and weight arrays are controlled by the processor through AXI4-Lite.
@@ -340,15 +363,6 @@ LEDs.
 The provided `neuralNet.h` defines the function interface, and `testBench.cpp`
 supplies test inputs and checks the C model before synthesis.
 
-\subsection*{HLS results}
-
-We compared the design with and without pipelining the inner loops. In the
-pipelined version, an initiation interval of one is requested:
-
-\begin{lstlisting}[caption={Pipeline directive used on the inner loops}]
-#pragma HLS PIPELINE II=1
-\end{lstlisting}
-
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.82\textwidth]{\detokenize{../images/E7 - Simulation Synthesis.jpg}}
@@ -361,19 +375,42 @@ pipelined version, an initiation interval of one is requested:
     \caption{Simulation log for the neural network testbench.}
 \end{figure}
 
+\subsection*{HLS results}
+
+We compared the design with and without pipelining the inner loops. In the
+pipelined version, an initiation interval of one is requested:
+
+\begin{lstlisting}[caption={Pipeline directive used on the inner loops}]
+#pragma HLS PIPELINE II=1
+\end{lstlisting}
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.82\textwidth]{\detokenize{../images/E7 - Comparison Report.jpg}}
     \caption{Comparison of the pipelined and non-pipelined HLS implementations.}
 \end{figure}
 
+In the pipelined version, the inner loops are executed in parallel, resulting in a significant reduction in latency. The non-pipelined version has a latency of 20,502 clock cycles, while the pipelined version achieves a latency of 6,658 clock cycles.
+
+The pipelined version also uses more resources, as shown in the resource utilization report. The pipelined design uses 975 LUTs and 1564 FFs while the non-pipelined design uses 690 LUTs and 1,142 FFs. The DSP and BRAM usage is the same for both designs, with 5 DSPs and 14 BRAMs used.
+
 \subsection*{ZYBO integration and timing}
 
 The synthesized IP was exported as VHDL version 1.0.1 and integrated into the
 Vivado ZYBO design. The board photos document the switch-to-LED pass-through.
-The SDK test compares software and hardware outputs and measures input, weight,
-compute, and output-transfer times separately, making the data-transfer cost
-visible.
+
+Since the IP is connected directly to the switches and LEDs, the switch values are passed through to the LEDs. The test program therefore becomes simple.
+
+\begin{lstlisting}[caption={SDK test program for the neural network IP}, label={lst:sdk-test}, language={C}]
+int main(void)
+{
+    xil_printf("\r\n");
+    xil_printf("NeuralNet FPGA test\r\n");
+    while (1)
+    {}
+    return 0;
+}
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
@@ -389,7 +426,107 @@ visible.
     \end{minipage}
 \end{figure}
 
-The complete source code is provided separately with the assignment and is not
-repeated here.
+Then a new test program was created to compare the hardware implementation with a software version of the neural network. The software version was implemented in the SDK project, and the results were compared with the hardware implementation. The SDK test compares software and hardware outputs and measures input, weight,
+compute, and output-transfer times separately, making the data-transfer cost
+visible.
+
+\begin{lstlisting}[caption={SDK test program for comparing software and hardware neural network implementations}, label={lst:sdk-test-compare}, language={C}]
+int main(void)
+{
+    initTimer();
+
+    /* Extract input weights information */
+
+    printf(
+        "Input: depth = %d, bitwidth = %d\r\n",
+        depth,
+        bitwidth
+    );
+
+	/* Extract input weights information */
+
+    printf(
+        "Input weights: depth = %d, bitwidth = %d\r\n",
+        depth,
+        bitwidth
+    );
+
+	/* Extract output weights information */
+
+    printf(
+        "Output weights: depth = %d, bitwidth = %d\r\n",
+        depth,
+        bitwidth
+    );
+
+    testNeuralNet(); // run the test and compare software and hardware results
+
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={implementation of the testNeuralNet function for comparing software and hardware neural network outputs}, label={lst:test-neural-net}, language={C}]
+void testNeuralNet(void)
+{
+    unsigned int start;
+    unsigned int softwareTicks;
+    int scale;
+    int i;
+    float diff;
+    scale = (1 << BITS);
+
+    /* Generate test input data */
+
+    for (i = 0; i < INPUT_LEN; i++) {
+        inputs[i] = i;
+    }
+
+    /* Generate input-layer weights */
+
+    /* Generate output-layer weights */
+
+    /* Software implementation */
+
+    start = XScuTimer_GetCounterValue(TimerInstancePtr);
+
+    neuralNetFloat(inputs, weightsI, weightsO, outputsF);
+
+    softwareTicks = stopTimer(start);
+
+    printf("CPU computation: %u ticks\r\n", softwareTicks);
+
+    /* Hardware implementation */
+
+    neuralNetHW(inputs, weightsIS, weightsOS, outputsS);
+
+    /* Result comparison */
+    diff = 0;
+
+    for (i = 0; i < OUTPUT_LEN; i++) {
+
+        printf("Output[%d] = %d    Software = %0 2f\r\n", i, outputsS[i], outputsF[i]
+        );
+
+        diff += abs( outputsS[i] -(int)outputsF[i] );
+    }
+
+    if (diff < 10)
+        printf("\r\nResult: CORRECT\r\n");
+    else
+        printf("\r\nResult: DIFFERENT\r\n");
+}
+\end{lstlisting}
+
+
+After running the test, the output shows that the hardware and software implementations produce similar results, with a small difference due to fixed-point arithmetic.
+
+The execution time for the hardware implementation isn't significantly lower than that of the software version. This is because the processor and the fpga are running at different clock speeds. The processor runs at 650 MHz, while the FPGA runs at 100 MHz. This means if we scale the hardware execution time to the same clock speed as the processor, we can see that the hardware implementation is faster. The hardware implementation takes \textbf{253,307} clock cycles at 100 MHz, which scales to approximately \textbf{$253307 / 6.5 = 38970.3$} clock cycles at 650 MHz. The software implementation takes \textbf{96,525} clock cycles at 650 MHz. This results in an ideal speedup of approximately \textbf{$96525 / 38970.3 \approx 2.5$} times.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.7\textwidth]{\detokenize{../images/E7- Hardware and software NN comparison.png}}
+	\caption{Speedup of the hardware implementation compared to the software implementation}
+	\label{fig:speedup}
+\end{figure}
 
 \end{document}
