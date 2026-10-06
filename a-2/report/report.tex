@@ -15,7 +15,7 @@ Mark Myrtoft Bøgelund, student number: 202206634
 \date{Date: \today}
 \lstset{
     language=C++,
-    basicstyle=\ttfamily\small,
+    basicstyle=\ttfamily\footnotesize,
     frame=single,
     breaklines=true
 }
@@ -65,8 +65,6 @@ This provided the hardware and software platform for the exercises that follow.
 
 \newpage
 \section*{Exercise 3: Create a Console Application}
-
-\subsection*{Objective}
 
 In this exercise, we create a small console application for the ZYBO board. It
 receives commands over USB-UART and uses them to control the LEDs through the
@@ -118,8 +116,6 @@ prepares the structure we will use in the later exercises.
 
 \newpage
 \section*{Exercise 4: Create a Matrix Multiplication}
-
-\subsection*{Objective}
 
 In this exercise, we implement a software matrix multiplication on the ZYBO
 board. The program uses two 4x4 matrices, calculates the product, and reports
@@ -176,19 +172,11 @@ confusing at first, but we eventually got it and arrived at the correct result.
 
 \begin{lstlisting}[language=C,caption={Matrix initialization and software multiplication}]
 void setInputMatrices(VectorArray A, VectorArray B)
-{
-    A[0].comp[0] = 1;  A[0].comp[1] = 2;
-    ...
-
-    B[0].comp[0] = 1; B[0].comp[1] = 1;
-    ...
-}
-
+{...}
 void multiMatrixSoft(VectorArray A, VectorArray B, VectorArray P)
 {
     int Arow, Brow, col;
     unsigned int sum;
-
     for (Arow = 0; Arow < MSIZE; Arow++) {
         for (Brow = 0; Brow < MSIZE; Brow++) {
             sum = 0;
@@ -202,8 +190,6 @@ void multiMatrixSoft(VectorArray A, VectorArray B, VectorArray P)
 
 The full implementation and setup can be found in the accompanying source code
 files.
-
-\newpage
 
 The result of the matrix multiplication is shown in the figure below.
 
@@ -220,15 +206,11 @@ with the hardware-accelerated version.
 \newpage
 \section*{Exercise 5: Create a Hardware IP Acceleration}
 
-\subsection*{Objective}
-
 In this exercise, we use a custom hardware IP to accelerate the matrix
 multiplication from Exercise 4. The IP performs four byte-wise multiplications
 and adds the results before returning a single matrix element.
 
 \subsection*{Matrix IP}
-
-\codeplaceholder{VHDL matrix IP user logic}
 
 The matrix IP receives two packed 32-bit values through its registers. Each
 value contains four matrix elements, so the IP can multiply the corresponding
@@ -237,7 +219,22 @@ memory-mapped register.
 
 \subsection*{Hardware matrix multiplication}
 
-\codeplaceholder{multiMatrixHard function and memory-mapped IP access}
+\begin{lstlisting}[language=C,caption={Writing matrix rows to the IP and reading each result}]
+void multiMatrixHard(VectorArray A, VectorArray B, VectorArray P)
+{
+    for (int row = 0; row < MSIZE; row++) {
+        for (int col = 0; col < MSIZE; col++) {
+            MATRIX_IP_mWriteReg(XPAR_MATRIX_IP_0_S00_AXI_BASEADDR,
+                MATRIX_IP_S00_AXI_SLV_REG0_OFFSET, A[row].vect);
+            MATRIX_IP_mWriteReg(XPAR_MATRIX_IP_0_S00_AXI_BASEADDR,
+                MATRIX_IP_S00_AXI_SLV_REG1_OFFSET, B[col].vect);
+            P[row].comp[col] = MATRIX_IP_mReadReg(
+                XPAR_MATRIX_IP_0_S00_AXI_BASEADDR,
+                MATRIX_IP_S00_AXI_SLV_REG2_OFFSET);
+        }
+    }
+}
+\end{lstlisting}
 
 The hardware implementation uses the same matrix structure as the software
 version. Instead of calculating the four products in the processor, each row of
@@ -246,12 +243,28 @@ stored in the corresponding element of $P$.
 
 \subsection*{Timing comparison}
 
+We measured elapsed clock ticks around each software and hardware function call
+using the processor timer:
+\begin{lstlisting}[language=C,caption={Measuring software and hardware execution time}]
+XTime_GetTime(&startTime);
+multiMatrixSoft(aInst, bInst, pInst);
+XTime_GetTime(&endTime);
+softTime = endTime - startTime;
+
+XTime_GetTime(&startTime);
+multiMatrixHard(aInst, bInst, pInst);
+XTime_GetTime(&endTime);
+hardTime = endTime - startTime;
+\end{lstlisting}
+
+Running the software and hardware matrix multiplication functions produces the
+following comparison:
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{\detokenize{../images/E5 - Matrix mult soft and hard.jpg}}
     \caption{Comparison of the software and hardware matrix multiplication results.}
 \end{figure}
-
+\newpage
 Both implementations produce the same result. The software version took 1253
 clock ticks, compared with 3981 ticks for the hardware version. The processing
 system runs at 650 MHz, while the hardware IP in the programmable logic runs at
@@ -268,8 +281,6 @@ The practical speedup would be lower because the transfer overhead remains.
 
 \newpage
 \section*{Exercise 7: HLS exercise implementing a Neural Network}
-
-\subsection*{Objective}
 
 In this exercise, we implement a configurable two-layer neural network in C++
 and use Vivado HLS to synthesize it as an IP core. The network uses fixed-point
