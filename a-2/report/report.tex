@@ -67,7 +67,8 @@ int main(void)
 \end{lstlisting}
 
 The application will read a command from the terminal and use a \texttt{switch}
-statement to select the requested operation.
+statement to select the requested operation. Below are the implementations for
+each command.
 
 \newpage
 \subsection*{Command 1: Switches to LEDs}
@@ -136,11 +137,8 @@ the current counter value. This can be seen working in the figures below.
 \end{figure}
 
 With command \texttt{2}, the timer increases the counter once per second. The
-LEDs display the counter as a four-bit binary value.
-
-This exercise gives us a first working connection between software running on
-the processing system and hardware peripherals on the ZYBO board. It also
-prepares the structure used in the following exercises.
+LEDs display the counter as a four-bit binary value. \\ \\ This small console
+application prepares the structure used in the following exercises.
 
 \newpage
 \section*{Exercise 4: Create a Matrix Multiplication}
