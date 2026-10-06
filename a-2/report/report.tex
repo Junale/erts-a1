@@ -174,7 +174,38 @@ assignment:
 We made the multiplication and transposition in the same loops. This was
 confusing at first, but we eventually got it and arrived at the correct result.
 
-\codeplaceholder{Matrix initialization and software multiplication}
+\begin{lstlisting}[language=C,caption={Matrix initialization and software multiplication}]
+void setInputMatrices(VectorArray A, VectorArray B)
+{
+    A[0].comp[0] = 1;  A[0].comp[1] = 2;
+    ...
+
+    B[0].comp[0] = 1; B[0].comp[1] = 1;
+    ...
+}
+
+void multiMatrixSoft(VectorArray A, VectorArray B, VectorArray P)
+{
+    int Arow, Brow, col;
+    unsigned int sum;
+
+    for (Arow = 0; Arow < MSIZE; Arow++) {
+        for (Brow = 0; Brow < MSIZE; Brow++) {
+            sum = 0;
+            for (col = 0; col < MSIZE; col++)
+                sum += A[Arow].comp[col] * B[Brow].comp[col];
+            P[Arow].comp[Brow] = sum;
+        }
+    }
+}
+\end{lstlisting}
+
+The full implementation and setup can be found in the accompanying source code
+files.
+
+\newpage
+
+The result of the matrix multiplication is shown in the figure below.
 
 \begin{figure}[H]
     \centering
