@@ -72,37 +72,99 @@ switches and timer.
 
 \subsection*{Command interpreter}
 
-\codeplaceholder{Console command interpreter}
+\begin{lstlisting}[caption={Command interpreter for the console application.}, label={lst:command-interpreter}, language={C}]
+int main(void)
+{
+	/* Initialize variables */
+
+	xil_printf("-- Start of the Program --\r\n");
+	xil_printf("Enter choice: 1 (SW->LEDs), 2 (Timer->LEDs), 3 (Matrix), 4 (exit)\r\n");
+
+	/* Initialize switches */
+	
+	/* Initialize timer */
+
+	while (running) {
+		xil_printf("CMD :> ");
+
+		value = inbyte();
+
+		switch (value) {
+			/* Case handling */
+		}
+	}
+	xil_printf("-- End of Program --\r\n");
+	return 0;
+}
+
+\end{lstlisting}
 
 The application will read a command from the terminal and use a \texttt{switch}
 statement to select the requested operation.
 
 \subsection*{Command 1: Switches to LEDs}
 
-\codeplaceholder{Reading the switches and writing the LED output}
+\begin{lstlisting}[caption={Switches to LEDs command implementation.}, label={lst:switch-to-leds}, language={C}]
+...
+case '1': {
+	switch_value = XGpio_DiscreteRead(&switches, 1);
+	switch_value &= 0x0F;
+
+	LED_IP_mWriteReg(XPAR_LED_IP_0_S_AXI_BASEADDR,LED_IP_S_AXI_SLV_REG0_OFFSET,switch_value);
+
+	xil_printf("Switch value: %x\r\n", switch_value);
+	break;
+}
+...
+\end{lstlisting}
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.5\textwidth]{\detokenize{../images/E3 - Switch and LED.jpg}}
-    \caption{The LEDs reflect the binary state of the switches.}
+	\centering
+	\includegraphics[width=0.5\textwidth]{\detokenize{../images/E3 - Switch and LED.jpg}}
+	\caption{The LEDs reflect the binary state of the switches.}
 \end{figure}
 
 With command \texttt{1}, the LEDs light up according to the switch positions.
 
 \subsection*{Command 2: Timer-driven binary counter}
 
-\codeplaceholder{XScuTimer initialization and one-second counter}
+\begin{lstlisting}[caption={Timer-driven binary counter command implementation.}, label={lst:timer-counter}, language={C}]
+...
+case '2': {
+	xil_printf("Starting binary counter...\r\n");
+
+	counter = 0;
+
+	while (1) {
+		if (XScuTimer_IsExpired(TimerInstancePtr)) {
+			XScuTimer_ClearInterruptStatus(TimerInstancePtr);
+
+			LED_IP_mWriteReg(XPAR_LED_IP_0_S_AXI_BASEADDR, LED_IP_S_AXI_SLV_REG0_OFFSET, counter);
+
+			xil_printf("Counter: %x\r\n", counter);
+
+			counter++;
+
+			if (counter > 15)
+				counter = 0;
+		}
+	}
+
+	break;
+}
+...
+\end{lstlisting}
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.5\textwidth]{\detokenize{../images/E3 - Counter and LED 1.jpg}}
-    \caption{The terminal displays the counter while the LEDs show its binary value.}
+	\centering
+	\includegraphics[width=0.5\textwidth]{\detokenize{../images/E3 - Counter and LED 2.jpg}}
+	\caption{The terminal displays the counter while the LEDs show its binary value.}
 \end{figure}
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.5\textwidth]{\detokenize{../images/E3 - Counter and LED 2.jpg}}
-    \caption{The counter continues increasing and is reflected on the LEDs.}
+	\centering
+	\includegraphics[width=0.5\textwidth]{\detokenize{../images/E3 - Counter and LED 1.jpg}}
+	\caption{The counter continues increasing and is reflected on the LEDs.}
 \end{figure}
 
 With command \texttt{2}, the timer increases the counter once per second. The
@@ -126,33 +188,33 @@ the execution time through the USB-UART interface.
 The first matrix contains the values from 1 to 16. For the second matrix, the
 assignment gives $B^T$, so if:
 \[
-    B^T =
-    \left(
-    \begin{bmatrix}
-            1 & 1 & 1 & 1 \\
-            2 & 2 & 2 & 2 \\
-            3 & 3 & 3 & 3 \\
-            4 & 4 & 4 & 4
-        \end{bmatrix}
-    \right)^T
-    =
-    \begin{bmatrix}
-        1 & 2 & 3 & 4 \\
-        1 & 2 & 3 & 4 \\
-        1 & 2 & 3 & 4 \\
-        1 & 2 & 3 & 4
-    \end{bmatrix}.
+	B^T =
+	\left(
+	\begin{bmatrix}
+			1 & 1 & 1 & 1 \\
+			2 & 2 & 2 & 2 \\
+			3 & 3 & 3 & 3 \\
+			4 & 4 & 4 & 4
+		\end{bmatrix}
+	\right)^T
+	=
+	\begin{bmatrix}
+		1 & 2 & 3 & 4 \\
+		1 & 2 & 3 & 4 \\
+		1 & 2 & 3 & 4 \\
+		1 & 2 & 3 & 4
+	\end{bmatrix}.
 \]
 
 Then:
 \[
-    B =
-    \begin{bmatrix}
-        1 & 1 & 1 & 1 \\
-        2 & 2 & 2 & 2 \\
-        3 & 3 & 3 & 3 \\
-        4 & 4 & 4 & 4
-    \end{bmatrix}
+	B =
+	\begin{bmatrix}
+		1 & 1 & 1 & 1 \\
+		2 & 2 & 2 & 2 \\
+		3 & 3 & 3 & 3 \\
+		4 & 4 & 4 & 4
+	\end{bmatrix}
 \]
 We used the matrices $A$ and $B$ as defined above for the multiplication, which
 is performed using nested loops, where each element in the result is calculated
@@ -162,9 +224,9 @@ Following the operations shown in the figure below, which we took from the
 assignment:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.5\textwidth]{\detokenize{../images/E4 - Assignment operations.png}}
-    \caption{Matrix multiplication operations for calculating the elements of $P$.}
+	\centering
+	\includegraphics[width=0.5\textwidth]{\detokenize{../images/E4 - Assignment operations.png}}
+	\caption{Matrix multiplication operations for calculating the elements of $P$.}
 \end{figure}
 
 We made the multiplication and transposition in the same loops. This was
@@ -194,9 +256,9 @@ files.
 The result of the matrix multiplication is shown in the figure below.
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.5\textwidth]{\detokenize{../images/E4 - Matrix Mult.jpg}}
-    \caption{Matrix multiplication result and execution time.}
+	\centering
+	\includegraphics[width=0.5\textwidth]{\detokenize{../images/E4 - Matrix Mult.jpg}}
+	\caption{Matrix multiplication result and execution time.}
 \end{figure}
 
 The result matrix is displayed correctly, and the software implementation takes
@@ -260,9 +322,9 @@ hardTime = endTime - startTime;
 Running the software and hardware matrix multiplication functions produces the
 following comparison:
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.5\textwidth]{\detokenize{../images/E5 - Matrix mult soft and hard.jpg}}
-    \caption{Comparison of the software and hardware matrix multiplication results.}
+	\centering
+	\includegraphics[width=0.5\textwidth]{\detokenize{../images/E5 - Matrix mult soft and hard.jpg}}
+	\caption{Comparison of the software and hardware matrix multiplication results.}
 \end{figure}
 \newpage
 Both implementations produce the same result. The software version took 1253
@@ -271,11 +333,11 @@ system runs at 650 MHz, while the hardware IP in the programmable logic runs at
 100 MHz. The hardware time also includes transfers to and from the IP. If the
 hardware IP ran at 650 MHz, its ideal scaled time would be:
 \[
-    3981 \cdot \frac{100}{650} \approx 612\ \text{clock ticks}.
+	3981 \cdot \frac{100}{650} \approx 612\ \text{clock ticks}.
 \]
 Compared with the software result, this corresponds to an ideal speedup of
 \[
-    \frac{1253}{612} \approx 2.05\times.
+	\frac{1253}{612} \approx 2.05\times.
 \]
 The practical speedup would be lower because the transfer overhead remains.
 
@@ -327,21 +389,21 @@ pipelined version, an initiation interval of one is requested:
 \end{lstlisting}
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.82\textwidth]{\detokenize{../images/E7 - Simulation Synthesis.jpg}}
-    \caption{Vivado HLS simulation and synthesis results.}
+	\centering
+	\includegraphics[width=0.82\textwidth]{\detokenize{../images/E7 - Simulation Synthesis.jpg}}
+	\caption{Vivado HLS simulation and synthesis results.}
 \end{figure}
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.82\textwidth]{\detokenize{../images/E7 - Simulation Log.jpg}}
-    \caption{Simulation log for the neural network testbench.}
+	\centering
+	\includegraphics[width=0.82\textwidth]{\detokenize{../images/E7 - Simulation Log.jpg}}
+	\caption{Simulation log for the neural network testbench.}
 \end{figure}
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.82\textwidth]{\detokenize{../images/E7 - Comparison Report.jpg}}
-    \caption{Comparison of the pipelined and non-pipelined HLS implementations.}
+	\centering
+	\includegraphics[width=0.82\textwidth]{\detokenize{../images/E7 - Comparison Report.jpg}}
+	\caption{Comparison of the pipelined and non-pipelined HLS implementations.}
 \end{figure}
 
 \subsection*{ZYBO integration and timing}
@@ -353,17 +415,17 @@ compute, and output-transfer times separately, making the data-transfer cost
 visible.
 
 \begin{figure}[H]
-    \centering
-    \begin{minipage}[t]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{\detokenize{../images/E7 - Zybo board LEDS and switches 1.jpg}}
-        \caption{ZYBO switch and LED verification.}
-    \end{minipage}\hfill
-    \begin{minipage}[t]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{\detokenize{../images/E7 - Zybo board LEDS and switches 2.jpg}}
-        \caption{A second switch and LED test state.}
-    \end{minipage}
+	\centering
+	\begin{minipage}[t]{0.48\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{\detokenize{../images/E7 - Zybo board LEDS and switches 1.jpg}}
+		\caption{ZYBO switch and LED verification.}
+	\end{minipage}\hfill
+	\begin{minipage}[t]{0.48\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{\detokenize{../images/E7 - Zybo board LEDS and switches 2.jpg}}
+		\caption{A second switch and LED test state.}
+	\end{minipage}
 \end{figure}
 
 The complete source code is provided separately with the assignment and is not
