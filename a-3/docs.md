@@ -3,11 +3,12 @@
 config:
   class:
     hideEmptyMembersBox: true
-title: singleton GoF state  class diagram 
+title: singleton GoF state  class diagram
 ---
 classDiagram
     class EmbeddedSystemX{
         - state: SystemState
+        + setState(SystemState*)
     }
 
     EmbeddedSystemX --> SystemState
@@ -37,6 +38,7 @@ classDiagram
         - state: OperationalState
         + invoke()
         + getInstance(): Operational
+        + setState(OperationalState*)
     }
 
     Operational --> OperationalState
@@ -60,6 +62,7 @@ classDiagram
         + getInstance(): Configuration
     }
     class RealTimeLoop {
+        - queue: ChmodeQueue*
         + invoke()
         + getInstance(): RealTimeLoop
     }
@@ -82,9 +85,11 @@ classDiagram
 
     ChmodeEventHandler --> ChmodeEvent
     ChmodeEventHandler --> ChmodeQueue : pop
-    
+
     class ChmodeEventHandler {
+        - queue: ChmodeQueue*
         + handle(ChmodeEvent)
+        + runThread()
     }
 
 
