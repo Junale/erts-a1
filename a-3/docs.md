@@ -65,6 +65,7 @@ classDiagram
         - queue: ChmodeQueue*
         + invoke()
         + getInstance(): RealTimeLoop
+        + setQueue(ChmodeQueue*)
     }
 
 
@@ -90,9 +91,13 @@ classDiagram
         - queue: ChmodeQueue*
         + handle(ChmodeEvent)
         + runThread()
+        + ChmodeEventHandler(ChmodeQueue*)
     }
-
-
-
-
 ```
+
+## Libraries
+
+The used c++ libraries:
+
+- iostream: To output the states etc.
+- threads: For running the handler asynchronously
