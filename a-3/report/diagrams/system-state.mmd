@@ -1,0 +1,53 @@
+---
+config:
+  class:
+    hideEmptyMembersBox: true
+title: system state pattern
+---
+classDiagram
+    class EmbeddedSystemX {
+        - state: SystemState*
+        + setState(SystemState*)
+    }
+
+    class SystemState {
+        + invoke()
+    }
+
+    EmbeddedSystemX --> SystemState
+    SystemState <|-- PowerOnSelfTest
+    SystemState <|-- Failure
+    SystemState <|-- Initializing
+    SystemState <|-- Operational
+
+    class PowerOnSelfTest {
+        + invoke()
+        + getInstance(): PowerOnSelfTest&
+        - PowerOnSelfTest()
+        - PowerOnSelfTest(const PowerOnSelfTest&)
+        - operator=(const PowerOnSelfTest&): PowerOnSelfTest&
+    }
+
+    class Failure {
+        + invoke()
+        + getInstance(): Failure&
+        - Failure()
+        - Failure(const Failure&)
+        - operator=(const Failure&): Failure&
+    }
+
+    class Initializing {
+        + invoke()
+        + getInstance(): Initializing&
+        - Initializing()
+        - Initializing(const Initializing&)
+        - operator=(const Initializing&): Initializing&
+    }
+
+    class Operational {
+        + invoke()
+        + getInstance(): Operational&
+        - Operational()
+        - Operational(const Operational&)
+        - operator=(const Operational&): Operational&
+    }

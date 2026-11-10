@@ -1,0 +1,49 @@
+---
+config:
+  class:
+    hideEmptyMembersBox: true
+title: Operational state pattern
+---
+classDiagram
+    class Operational {
+        - state: OperationalState*
+        + invoke()
+        + getInstance(): Operational&
+        + setState(OperationalState*)
+        - Operational()
+        - Operational(const Operational&)
+        - operator=(const Operational&): Operational&
+    }
+
+    class OperationalState {
+        + invoke()
+    }
+
+    Operational --> OperationalState
+    OperationalState <|-- Ready
+    OperationalState <|-- Configuration
+    OperationalState <|-- RealTimeLoop
+
+    class Ready {
+        + invoke()
+        + getInstance(): Ready&
+        - Ready()
+        - Ready(const Ready&)
+        - operator=(const Ready&): Ready&
+    }
+
+    class Configuration {
+        + invoke()
+        + getInstance(): Configuration&
+        - Configuration()
+        - Configuration(const Configuration&)
+        - operator=(const Configuration&): Configuration&
+    }
+
+    class RealTimeLoop {
+        + invoke()
+        + getInstance(): RealTimeLoop&
+        - RealTimeLoop()
+        - RealTimeLoop(const RealTimeLoop&)
+        - operator=(const RealTimeLoop&): RealTimeLoop&
+    }

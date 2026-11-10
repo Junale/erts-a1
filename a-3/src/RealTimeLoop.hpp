@@ -39,7 +39,7 @@ public:
         }
     }
 
-    void SetQueue(ChmodeQueue *queue)
+    void setQueue(ChmodeQueue *queue)
     {
         queue_ = queue;
     }

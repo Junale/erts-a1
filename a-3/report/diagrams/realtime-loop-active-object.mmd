@@ -1,0 +1,42 @@
+---
+config:
+  class:
+    hideEmptyMembersBox: true
+title: RealTimeLoop active object pattern
+---
+classDiagram
+    class RealTimeLoop {
+        - queue: ChmodeQueue*
+        + invoke()
+        + getInstance(): RealTimeLoop&
+        + SetQueue(ChmodeQueue*)
+        - RealTimeLoop()
+        - RealTimeLoop(const RealTimeLoop&)
+        - operator=(const RealTimeLoop&): RealTimeLoop&
+    }
+
+    class ChmodeEvent {
+        + Type: enum
+        + ChmodeEvent(Type)
+        + getType(): Type
+        - type: Type
+    }
+
+    class ChmodeQueue {
+        - queue: std::queue~ChmodeEvent~
+        + push(const ChmodeEvent&)
+        + pop(): std::optional~ChmodeEvent~
+    }
+
+    class ChmodeEventHandler {
+        - queue: ChmodeQueue*
+        + handle(ChmodeEvent)
+        + runThread()
+        + ChmodeEventHandler(ChmodeQueue*)
+    }
+
+    RealTimeLoop --> ChmodeQueue : push
+    RealTimeLoop --> ChmodeEvent : creates
+    ChmodeQueue --> ChmodeEvent
+    ChmodeEventHandler --> ChmodeQueue : pop
+    ChmodeEventHandler --> ChmodeEvent : handles

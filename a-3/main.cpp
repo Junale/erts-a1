@@ -16,7 +16,7 @@ int main()
     ChmodeQueue eventQueue;
     ChmodeEventHandler eventHandler(&eventQueue);
     RealTimeLoop &realTimeLoop = RealTimeLoop::getInstance();
-    realTimeLoop.SetQueue(&eventQueue);
+    realTimeLoop.setQueue(&eventQueue);
     Operational &operational = Operational::getInstance();
     std::thread eventHandlerThread(&ChmodeEventHandler::runThread,
                                    &eventHandler);
