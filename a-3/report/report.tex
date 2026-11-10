@@ -30,7 +30,7 @@ Mark Myrtoft Bøgelund, student number: 202206634
 
 \section{Introduction}
 The purpose of this assignment is using design patterns introduced in the
-course in a simple embedded system as an example. The specific patterns used
+course in a simple embedded system. The specific patterns used
 were the State pattern, the Singleton pattern and the Active object pattern.
 This report proposes a design for the embedded system using these patterns, and
 showcases the implementation and testing of the design.
@@ -84,8 +84,7 @@ generation from event handling.
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{diagrams/realtime-loop-active-object.png}
-    \caption{Active object design for the real-time loop and event handler.}
-    \label{fig:realtime-loop}
+    \caption{Active object design for the real-time loop and event handler.}\label{fig:realtime-loop}
 \end{figure}
 
 \section{Implementation}
@@ -93,6 +92,18 @@ The implementation follows the design by separating the state contexts from
 their concrete states and by connecting the real-time loop to the event handler
 through a queue. The main program creates the contexts and the event handler,
 then uses a command loop to request state transitions.
+
+For the implementation some c++ features were used:
+
+\begin{itemize}
+    \item \texttt{std::thread} was used to create a separate thread for the
+          event handler.
+    \item \texttt{std::optional} was used to return an optional value from the
+          queue when an event is available.
+    \item \texttt{std::ostream} was used to format the output of the state names and event types.
+    \item \texttt{std::queue} was used to store the events in the queue.
+\end{itemize}
+
 
 \subsection{Main program loop}
 
@@ -210,7 +221,7 @@ level. Its validation allows initialization in \texttt{Ready}, transitions
 from \texttt{Ready} to either \texttt{Configuration} or
 \texttt{RealTimeLoop}, and returns from either of those states to
 \texttt{Ready}.
-
+\newpage
 \begin{lstlisting}[caption={Validation and application of an operational-state transition.}, label={lst:operational-state-transition}, language={C++}]
 const bool validTransition =
     (state_ == nullptr && toReady) ||
@@ -227,6 +238,38 @@ if (!validTransition)
 state_ = state;
 state_->invoke();
 \end{lstlisting}
+
+\subsection{State invocation implementation}
+
+Each concrete state implements \texttt{invoke} to print its name. This
+demonstrates that the state has been entered and allows the user to verify that
+the correct state is active. An example implementation for \texttt{PowerOnSelfTest} is shown below.
+
+\begin{lstlisting}[caption={Example implementation of a state's invoke method.}, label={lst:state-invoke}, language={C++}]
+void invoke() override
+{
+    printState("systemstate", "PowerOnSelfTest");
+}
+\end{lstlisting}
+
+All the implementations of \texttt{invoke} use the same \texttt{printState} helper function, which formats the output to clearly indicate the type of state and its name. The printState function is implemented as follows:
+
+\newpage
+
+\begin{lstlisting}[caption={Helper function for printing state information.}, label={lst:print-state}, language={C++}]
+#ifndef ERTS_A3_STATE_OUTPUT_HPP
+#define ERTS_A3_STATE_OUTPUT_HPP
+
+#include <iostream>
+
+inline void printState(const char* type, const char* name)
+{
+    std::cout << '{' << type << ", " << name << '}' << '\n';
+}
+
+#endif
+\end{lstlisting}
+
 
 \subsection{Event creation and queueing}
 
@@ -251,12 +294,10 @@ void push(const ChmodeEvent& event)
 {
     queue_.push(event);
 }
-
 std::optional<ChmodeEvent> pop()
 {
     if (queue_.empty())
         return std::nullopt;
-
     ChmodeEvent event = queue_.front();
     queue_.pop();
     return event;
