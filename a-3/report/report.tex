@@ -29,15 +29,18 @@ Mark Myrtoft Bøgelund, student number: 202206634
 \newpage
 
 \section{Introduction}
-The purpose of this assignment was to use some of the design patterns introduced in the course.
-This was done using a simple embedded system as an example. The specific patterns used were the state pattern and the active object pattern. This report proposes a design for the embedded system using these patterns, and showcases the implementation and testing of the design.
+The purpose of this assignment is using design patterns introduced in the
+course in a simple embedded system as an example. The specific patterns used
+were the State pattern, the Singleton pattern and the Active object pattern.
+This report proposes a design for the embedded system using these patterns, and
+showcases the implementation and testing of the design.
 
 \section{Design}
 The design is divided into three cooperating parts: the system-level state
 machine, the substates used while the system is operational, and the active
 object responsible for processing change-mode events.
 
-\subsection{System state pattern}
+\subsection{System states}
 
 The system-level state pattern models the major states of the embedded system.
 \texttt{EmbeddedSystemX} stores a pointer to the current \texttt{SystemState}
@@ -54,13 +57,13 @@ exists.
     \label{fig:system-state}
 \end{figure}
 
-\subsection{Operational state pattern}
+\subsection{Operational states}
 
 \texttt{Operational} is itself a state context with a nested state machine.
 It stores an \texttt{OperationalState} pointer and controls transitions
 between \texttt{Ready}, \texttt{Configuration}, and \texttt{RealTimeLoop}.
 This separates the general system lifecycle from the behavior specific to
-normal operation. The operational states also use the Singleton pattern.
+normal operation. The operational states are also implemented as Singleton.
 
 \begin{figure}[H]
     \centering
@@ -69,7 +72,7 @@ normal operation. The operational states also use the Singleton pattern.
     \label{fig:operational-states}
 \end{figure}
 
-\subsection{RealTimeLoop active object pattern}
+\subsection{RealTimeLoop with Active Object pattern}
 
 \texttt{RealTimeLoop} acts as the producer side of an active-object design.
 When invoked, it creates a \texttt{ChmodeEvent} and pushes it into a
@@ -87,9 +90,9 @@ generation from event handling.
 
 \section{Implementation}
 The implementation follows the design by separating the state contexts from
-their concrete states and by connecting the real-time loop to the event
-handler through a queue. The main program creates the contexts and the event
-handler, then uses a command loop to request state transitions.
+their concrete states and by connecting the real-time loop to the event handler
+through a queue. The main program creates the contexts and the event handler,
+then uses a command loop to request state transitions.
 
 \subsection{Main program loop}
 
@@ -240,8 +243,8 @@ if (queue_ != nullptr)
 }
 \end{lstlisting}
 
-The queue stores events and returns an optional value from \texttt{pop} when
-an event is available.
+The queue stores events and returns an optional value from \texttt{pop} when an
+event is available.
 
 \begin{lstlisting}[caption={Queue insertion and optional event retrieval.}, label={lst:event-queue}, language={C++}]
 void push(const ChmodeEvent& event)
@@ -293,16 +296,15 @@ void handle(const ChmodeEvent& event)
 \section{Testing}
 The tests cover both state-pattern implementations and the active-object
 communication through the event queue. Three interactive test cases were
-performed: a valid system-state transition, an invalid system-state
-transition, and event generation and handling in the real-time loop.
+performed: a valid system-state transition, an invalid system-state transition,
+and event generation and handling in the real-time loop.
 
 \subsection{Valid state transition}
 
 The program starts in \texttt{PowerOnSelfTest}. Selecting
-\texttt{SelftestFailed} requests the transition to \texttt{Failure}. This is
-a valid transition according to the system-state rules, so the state is
-updated and its \texttt{invoke} method prints
-\texttt{\{systemstate, Failure\}}.
+\texttt{SelftestFailed} requests the transition to \texttt{Failure}. This is a
+valid transition according to the system-state rules, so the state is updated
+and its \texttt{invoke} method prints \texttt{\{systemstate, Failure\}}.
 
 \begin{figure}[H]
     \centering
@@ -316,8 +318,8 @@ updated and its \texttt{invoke} method prints
 
 After entering \texttt{Failure}, selecting \texttt{SelftestOk} attempts to
 transition directly to \texttt{Initializing}. This transition is not allowed
-from \texttt{Failure}; the implementation therefore keeps the current state
-and reports \texttt{Invalid system state transition}.
+from \texttt{Failure}; the implementation therefore keeps the current state and
+reports \texttt{Invalid system state transition}.
 
 \begin{figure}[H]
     \centering
@@ -331,10 +333,13 @@ and reports \texttt{Invalid system state transition}.
 
 To test the active-object pattern, the system is first moved to
 \texttt{Operational} and then started with the \texttt{RealTimeLoop} state.
-Selecting change mode 1 creates a \texttt{Chmode1} event and pushes it into
-the queue. The event handler thread removes the event and prints
-\texttt{event: chmode1}, demonstrating that the event was transferred from
-the producer to the handler. Be aware that we haven't handled concurrency for writing to the console, so the output in the console is not in order, but the event output is rendered after the prompt for the next input, so it is clear that the event was handled after the event was created.
+Selecting change mode 1 creates a \texttt{Chmode1} event and pushes it into the
+queue. The event handler thread removes the event and prints \texttt{event:
+    chmode1}, demonstrating that the event was transferred from the producer to the
+handler. Be aware that we haven't handled concurrency for writing to the
+console, so the output in the console is not in order, but the event output is
+rendered after the prompt for the next input, so it is clear that the event was
+handled after the event was created.
 
 \begin{figure}[H]
     \centering
@@ -345,8 +350,18 @@ the producer to the handler. Be aware that we haven't handled concurrency for wr
 \end{figure}
 
 \section{Discussion}
-The design and implementation of the embedded system using the state pattern and active object pattern was successful. The state pattern allowed for clear separation of concerns between the different states of the system, while the active object pattern enabled asynchronous event handling. The tests demonstrated that valid state transitions were handled correctly, invalid transitions were rejected, and events were successfully passed from the real-time loop to the event handler.
+The design and implementation of the embedded system using the state pattern
+and active object pattern was successful. The state pattern allowed for clear
+separation of concerns between the different states of the system, while the
+active object pattern enabled asynchronous event handling. The tests
+demonstrated that valid state transitions were handled correctly, invalid
+transitions were rejected, and events were successfully passed from the
+real-time loop to the event handler.
 
-It should be noted that the utilization of the singleton pattern for the states may not be suitable for all applications, as it makes the internal state of the different states persistent across the lifetime of the program. In a more complex system, it may be necessary to allow for multiple instances of certain states or to reset their internal state between transitions.
+It should be noted that the utilization of the singleton pattern for the states
+may not be suitable for all applications, as it makes the internal state of the
+different states persistent across the lifetime of the program. In a more
+complex system, it may be necessary to allow for multiple instances of certain
+states or to reset their internal state between transitions.
 
 \end{document}
