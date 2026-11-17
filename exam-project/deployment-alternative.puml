@@ -1,0 +1,41 @@
+@startuml deployment
+skinparam linetype poly
+skinparam Nodesep 60
+skinparam Padding 2
+skinparam Ranksep 40
+
+
+node ZYBO <<device>> {
+    
+    node FPGA <<processor>> {
+
+    }
+
+    node ARM <<processor>> {
+        card UART <<component>>
+        card Decoder <<component>>
+        card Filter <<component>>
+        card MapReducer <<component>>
+        card ResultSelector <<component>>
+        card ResultReporter <<component>>
+        card ErrorReporter <<component>>
+    }
+
+
+    UART -[hidden]- Decoder
+    Decoder -[hidden]- Filter
+    Filter -[hidden]- MapReducer
+    MapReducer -[hidden]- ResultSelector
+    ResultSelector -[hidden]- ResultReporter
+    ResultReporter -[hidden]- ErrorReporter
+
+
+
+    FPGA -- ARM : Memory\n bus
+}
+
+node PC <<device>>
+
+PC - ZYBO : Serial\nUSB 
+
+@enduml
