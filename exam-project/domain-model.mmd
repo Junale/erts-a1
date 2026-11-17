@@ -1,0 +1,17 @@
+
+
+classDiagram
+    class SecretMessage
+    class SecretCode
+    class SecretAgent
+    class PC
+    class ZYBO
+
+    SecretAgent --> SecretMessage : has a
+    SecretAgent --> SecretCode : wants to find a 
+    SecretAgent --> PC : uses
+
+    PC --> ZYBO : uses
+
+    ZYBO --> SecretMessage : recieves a
+    ZYBO --> SecretCode : decodes a
