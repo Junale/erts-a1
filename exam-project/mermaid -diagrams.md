@@ -73,3 +73,72 @@ flowchart TB
     I -->|Yes| J[Report Most Frequent Word]
     J --> K[Send Most Frequent Word Over UART]
 ```
+
+```mermaid
+---
+    title: Hardware-Accelerated Deployment Diagram
+    config:
+        flowchart:
+            curve: linear
+---
+flowchart LR
+    PC["PC (device)"]
+
+    subgraph ZYBO["ZYBO (device)"]
+        direction LR
+
+        subgraph FPGA["FPGA (programmable logic)"]
+            direction TB
+            MapReducer["MapReducer (component)"]
+            ResultSelector["ResultSelector (component)"]
+            MapReducer ~~~ ResultSelector
+        end
+
+        subgraph ARM["ARM (processor)"]
+            direction TB
+            UART["UART (component)"]
+            Decoder["Decoder (component)"]
+            Filter["Filter (component)"]
+            ResultReporter["ResultReporter (component)"]
+            ErrorReporter["ErrorReporter (component)"]
+            UART ~~~ Decoder ~~~ Filter ~~~ ResultReporter ~~~ ErrorReporter
+        end
+
+        FPGA -->|Memory bus| ARM
+    end
+
+    PC ---|Serial USB| ZYBO
+```
+
+```mermaid
+---
+    title: Alternative Deployment Diagram
+    config:
+        flowchart:
+            curve: linear
+---
+flowchart LR
+    PC["PC (device)"]
+
+    subgraph ZYBO["ZYBO (device)"]
+        direction LR
+        FPGA["FPGA (programmable logic)"]
+
+        subgraph ARM["ARM (processor)"]
+            direction TB
+            UART["UART (component)"]
+            Decoder["Decoder (component)"]
+            Filter["Filter (component)"]
+            MapReducer["MapReducer (component)"]
+            ResultSelector["ResultSelector (component)"]
+            ResultReporter["ResultReporter (component)"]
+            ErrorReporter["ErrorReporter (component)"]
+
+            UART ~~~ Decoder ~~~ Filter ~~~ MapReducer ~~~ ResultSelector ~~~ ResultReporter ~~~ ErrorReporter
+        end
+
+        FPGA ---|Memory bus| ARM
+    end
+
+    PC ---|Serial USB| ZYBO
+```
