@@ -1,5 +1,3 @@
-
-
 classDiagram
     class SecretMessage
     class SecretCode
@@ -15,3 +13,5 @@ classDiagram
 
     ZYBO --> SecretMessage : recieves a
     ZYBO --> SecretCode : decodes a
+
+    SecretMessage --> SecretCode : most frequent word
