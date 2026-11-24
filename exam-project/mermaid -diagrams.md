@@ -170,10 +170,12 @@ classDiagram
     class DecoderFilter
 
     class AlgorithmProxy
+    class ResultHandler
 
     UART --> DecoderPipe
     DecoderPipe "1" --> "*" DecoderFilter
     DecoderFilter "*" --> "*" AlgorithmProxy
+    AlgorithmProxy --> ResultHandler
 
 ```
 
@@ -187,7 +189,6 @@ classDiagram
 
 classDiagram
     direction TB
-
     class AlgorithmProxy {
         -Scheduler scheduler
         +executeHardware(data: String) Future~List~String~~
