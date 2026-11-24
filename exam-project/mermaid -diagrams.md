@@ -13,7 +13,7 @@ class PC
 class ZYBO
 
     SecretAgent --> SecretMessage : has a
-    SecretAgent --> SecretCode : wants to find a 
+    SecretAgent --> SecretCode : wants to find a
     SecretAgent --> PC : uses
 
     PC --> ZYBO : uses
@@ -35,23 +35,20 @@ class ZYBO
 classDiagram
     class UART
     class Decoder
-    class Filter
     class MapReducer
     class ResultSelector
     class ResultReporter
     class ErrorReporter
 
     UART --> Decoder : sends data to
-    Decoder --> Filter : sends decoded data to
-    Filter --> MapReducer : sends filtered data to
+    Decoder --> MapReducer : sends decoded data to
     MapReducer --> ResultSelector : sends word counts to
-    ResultSelector --> ResultReporter : sends most frequent word to
+    ResultSelector --> ResultReporter : sends most frequent word(s) to
     ResultReporter --> UART : sends result to
     ErrorReporter --> UART : sends error to
 
     Decoder --> ErrorReporter : sends error to
-    Filter --> ErrorReporter : sends error to
-    ResultSelector --> ErrorReporter : sends error to
+    ResultReporter --> ErrorReporter : sends error to
 
 ```
 
@@ -63,10 +60,7 @@ flowchart TB
     A[Receive SecretMessage Over UART] --> B[Decode SecretMessage]
     B --> C{Decryption Successful?}
     C -->|No| F[Report Error]
-    C -->|Yes| D[Filter SecretMessage]
-    D --> E{Does SecretMessage contain at least one word?}
-    E -->|No| F[Report Error]
-    E -->|Yes| G[MapReduce SecretMessage]
+    C -->|Yes| G[MapReduce SecretMessage]
     G --> H[Select Most Frequent Word]
     H --> I{Is one word the most frequent?}
     I -->|No| F[Report Error]
@@ -98,10 +92,9 @@ flowchart LR
             direction TB
             UART["UART (component)"]
             Decoder["Decoder (component)"]
-            Filter["Filter (component)"]
             ResultReporter["ResultReporter (component)"]
             ErrorReporter["ErrorReporter (component)"]
-            UART ~~~ Decoder ~~~ Filter ~~~ ResultReporter ~~~ ErrorReporter
+            UART ~~~ Decoder ~~~ ResultReporter ~~~ ErrorReporter
         end
 
         FPGA -->|Memory bus| ARM
@@ -128,17 +121,97 @@ flowchart LR
             direction TB
             UART["UART (component)"]
             Decoder["Decoder (component)"]
-            Filter["Filter (component)"]
             MapReducer["MapReducer (component)"]
             ResultSelector["ResultSelector (component)"]
             ResultReporter["ResultReporter (component)"]
             ErrorReporter["ErrorReporter (component)"]
 
-            UART ~~~ Decoder ~~~ Filter ~~~ MapReducer ~~~ ResultSelector ~~~ ResultReporter ~~~ ErrorReporter
+            UART ~~~ Decoder ~~~ MapReducer ~~~ ResultSelector ~~~ ResultReporter ~~~ ErrorReporter
         end
 
         FPGA ---|Memory bus| ARM
     end
 
     PC ---|Serial USB| ZYBO
+```
+
+```mermaid
+---
+    title: Asynchronous Design Class Diagram
+    config:
+        class:
+            hideEmptyMembersBox: true
+---
+classDiagram
+    class UART
+    class DecoderPipe
+    class DecoderFilter
+
+    class AlgorithmProxy
+
+    UART --> DecoderPipe
+    DecoderPipe "1" --> "*" DecoderFilter
+    DecoderFilter "*" --> "*" AlgorithmProxy
+
+```
+
+```mermaid
+---
+    title: Synchronous Design Class Diagram
+    config:
+        class:
+            hideEmptyMembersBox: true
+---
+
+classDiagram
+    direction TB
+
+    class AlgorithmProxy {
+        -Scheduler scheduler
+        +executeHardware(data: String) Future~List~String~~
+        +executeSoftware(data: String) Future~List~String~~
+    }
+
+    class AlgorithmServant {
+        +executeHardware(data: String) List~String~
+        +executeSoftware(data: String) List~String~
+    }
+
+    class Scheduler {
+        -ActivationQueue activationQueue
+        +enqueue(request: AlgorithmMethodRequest) void
+        +dispatch() void
+    }
+
+    class ActivationQueue {
+        -Queue~AlgorithmMethodRequest~ requests
+        +enqueue(request: AlgorithmMethodRequest) void
+        +dequeue() AlgorithmMethodRequest
+        +isEmpty() Boolean
+    }
+
+
+    class AlgorithmMethodRequest {
+        -String data
+        -AlgorithmServant servant
+        -Future~List~String~~ future
+        +execute() void
+    }
+
+    class SoftwareAlgorithmMethodRequest {
+        +execute() void
+    }
+
+    class HardwareAlgorithmMethodRequest {
+        +execute() void
+    }
+
+    SoftwareAlgorithmMethodRequest ..|> AlgorithmMethodRequest
+    HardwareAlgorithmMethodRequest ..|> AlgorithmMethodRequest
+
+
+    AlgorithmProxy --> Scheduler : submits requests
+    Scheduler --> ActivationQueue : retrieves requests
+    ActivationQueue o-- AlgorithmMethodRequest : stores
+    AlgorithmMethodRequest --> AlgorithmServant : invokes
 ```
