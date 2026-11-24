@@ -134,7 +134,29 @@ flowchart LR
 
     PC ---|Serial USB| ZYBO
 ```
+```mermaid
+---
+    title: Error Handling Class Diagram
+    config:
+        class:
+            hideEmptyMembersBox: true  
+---
+classDiagram
+    direction BT
+    class UART {
+        <<singleton>>
+    }
+    class ErrorHandler {
+        <<singleton>>
+    }
+    class DecoderFilter
+    class ResultHandler
 
+    ErrorHandler "1" --> "1" UART
+    DecoderFilter "*" --> "1" ErrorHandler
+    ResultHandler "*" --> "1" ErrorHandler
+
+```
 ```mermaid
 ---
     title: Asynchronous Design Class Diagram
